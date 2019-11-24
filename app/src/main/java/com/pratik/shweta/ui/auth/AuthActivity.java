@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.RequestManager;
@@ -29,6 +30,8 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
 
     private AuthViewModel viewModel;
 
+    private ProgressBar progressBar;
+
     @Inject
     ViewModelsProviderFactory providerFactory;
 
@@ -45,15 +48,15 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         userID = findViewById(R.id.user_id_input);
+        progressBar = findViewById(R.id.progress_bar);
         findViewById(R.id.login_button).setOnClickListener(this);
-
-        viewModel = ViewModelProviders.of(this,providerFactory).get(AuthViewModel.class);
+        viewModel = ViewModelProviders.of(this, providerFactory).get(AuthViewModel.class);
         setLogo();
         subScribeObserver();
     }
 
-    private void subScribeObserver(){
-        viewModel.obserUser().observe(this, new Observer<UserResponseParser>() {
+    private void subScribeObserver() {
+       /* viewModel.obserUser().observe(this, new Observer<UserResponseParser>() {
             @Override
             public void onChanged(UserResponseParser userResponseParser) {
                 if(userResponseParser != null){
@@ -61,7 +64,42 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
                     Toast.makeText(AuthActivity.this,userResponseParser.getName(),Toast.LENGTH_LONG).show();
                 }
             }
+        });*/
+        viewModel.obserUser().observe(this, new Observer<AuthResource<UserResponseParser>>() {
+            @Override
+            public void onChanged(AuthResource<UserResponseParser> userResponseParserAuthResource) {
+                if (userResponseParserAuthResource != null) {
+                    switch (userResponseParserAuthResource.status) {
+                        case AUTHENTICATED:
+                            showProgressBar(false);
+                            Log.d(TAG, "onChanged: LOGIN SUCCESS " + userResponseParserAuthResource.data.getName());
+                            Toast.makeText(AuthActivity.this,userResponseParserAuthResource.data.getName(),Toast.LENGTH_LONG).show();
+                            break;
+                        case LOADING:
+                            showProgressBar(true);
+                            break;
+                        case NOT_AUTHENTICATED:
+                            showProgressBar(false);
+                            Log.d(TAG, "onChanged: LOGIN FAILED : " + userResponseParserAuthResource.message);
+                            Toast.makeText(AuthActivity.this,userResponseParserAuthResource.message,Toast.LENGTH_LONG).show();
+                            break;
+                        case ERROR:
+                            showProgressBar(false);
+
+                            break;
+                    }
+                }
+            }
         });
+    }
+
+    private void showProgressBar(boolean isVisible){
+        if(isVisible){
+            progressBar.setVisibility(View.VISIBLE);
+        }else{
+            progressBar.setVisibility(View.INVISIBLE);
+        }
+
     }
 
     public void setLogo() {
@@ -72,7 +110,7 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.login_button:
                 attemptLogin();
                 break;
@@ -80,7 +118,7 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
     }
 
     private void attemptLogin() {
-        if(!TextUtils.isEmpty(userID.getText().toString().trim())){
+        if (!TextUtils.isEmpty(userID.getText().toString().trim())) {
             viewModel.authenticateWithId(Integer.parseInt(userID.getText().toString().trim()));
         }
     }

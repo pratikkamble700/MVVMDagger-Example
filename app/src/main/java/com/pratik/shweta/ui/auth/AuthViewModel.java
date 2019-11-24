@@ -13,8 +13,7 @@ import com.pratik.shweta.network.auth.AuthAPI;
 
 import javax.inject.Inject;
 
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class AuthViewModel extends ViewModel {
@@ -22,7 +21,7 @@ public class AuthViewModel extends ViewModel {
 
     private AuthAPI authAPI;
 
-    private MediatorLiveData<UserResponseParser> authUser = new MediatorLiveData();
+    private MediatorLiveData<AuthResource<UserResponseParser>> authUser = new MediatorLiveData();
 
     @Inject
     public AuthViewModel(AuthAPI authAPI) {
@@ -57,21 +56,40 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void authenticateWithId(int id) {
-        final LiveData<UserResponseParser> source = LiveDataReactiveStreams.fromPublisher(
+        authUser.setValue(AuthResource.loading((UserResponseParser) null));
+        final LiveData<AuthResource<UserResponseParser>> source;
+        source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.getUsers(id)
+                        .onErrorReturn(new Function<Throwable, UserResponseParser>() {
+                            @Override
+                            public UserResponseParser apply(Throwable throwable) throws Exception {
+                                UserResponseParser errorUser = new UserResponseParser();
+                                errorUser.setId(-1);
+                                return errorUser;
+                            }
+                        })
+                        .map(new Function<UserResponseParser, AuthResource<UserResponseParser>>() {
+                            @Override
+                            public AuthResource<UserResponseParser> apply(UserResponseParser userResponseParser) throws Exception {
+                                if(userResponseParser.getId() == -1){
+                                    return AuthResource.error("Could not Authenticated",null);
+                                }
+                                return AuthResource.authenticated(userResponseParser);
+                            }
+                        })
                         .subscribeOn(Schedulers.io())
         );
 
-        authUser.addSource(source, new Observer<UserResponseParser>() {
+        authUser.addSource(source, new Observer<AuthResource<UserResponseParser>>() {
             @Override
-            public void onChanged(UserResponseParser userResponseParser) {
+            public void onChanged(AuthResource<UserResponseParser> userResponseParser) {
                 authUser.setValue(userResponseParser);
                 authUser.removeSource(source);
             }
         });
     }
 
-    public LiveData<UserResponseParser> obserUser() {
+    public LiveData<AuthResource<UserResponseParser>> obserUser() {
         return authUser;
     }
 }
