@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import com.pratik.shweta.BaseActivity;
 import com.pratik.shweta.R;
 import com.pratik.shweta.SessionManager;
+import com.pratik.shweta.ui.main.profile.ProfileFragment;
 
 import javax.inject.Inject;
 
@@ -25,6 +26,7 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        testFragmentTransaction();
     }
 
     @Override
@@ -32,6 +34,12 @@ public class MainActivity extends BaseActivity {
         MenuInflater mainMenuInflater = getMenuInflater();
         mainMenuInflater.inflate(R.menu.main_menu,menu);
         return true;
+    }
+
+    private void testFragmentTransaction(){
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.main_container,new ProfileFragment())
+                .commit();
     }
 
 
