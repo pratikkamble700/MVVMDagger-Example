@@ -20,6 +20,8 @@
         app:layout_constraintTop_toBottomOf="@+id/login_logo"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        android:inputType="number"
+        android:digits="0123456789"
         android:hint="User id"
         android:textColor="#000"
         android:layout_width="match_parent"

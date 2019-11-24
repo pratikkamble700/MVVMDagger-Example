@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.bumptech.glide.RequestManager;
 import com.pratik.shweta.R;
 import com.pratik.shweta.model.userAPI.UserResponseParser;
+import com.pratik.shweta.ui.main.MainActivity;
 import com.pratik.shweta.viewmodels.ViewModelsProviderFactory;
 
 import javax.inject.Inject;
@@ -65,7 +67,7 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
                 }
             }
         });*/
-        viewModel.obserUser().observe(this, new Observer<AuthResource<UserResponseParser>>() {
+        viewModel.obserSessionState().observe(this, new Observer<AuthResource<UserResponseParser>>() {
             @Override
             public void onChanged(AuthResource<UserResponseParser> userResponseParserAuthResource) {
                 if (userResponseParserAuthResource != null) {
@@ -73,7 +75,8 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
                         case AUTHENTICATED:
                             showProgressBar(false);
                             Log.d(TAG, "onChanged: LOGIN SUCCESS " + userResponseParserAuthResource.data.getName());
-                            Toast.makeText(AuthActivity.this,userResponseParserAuthResource.data.getName(),Toast.LENGTH_LONG).show();
+//                            Toast.makeText(AuthActivity.this,userResponseParserAuthResource.data.getName(),Toast.LENGTH_LONG).show();
+                            onLoginSuccess();
                             break;
                         case LOADING:
                             showProgressBar(true);
@@ -81,11 +84,10 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
                         case NOT_AUTHENTICATED:
                             showProgressBar(false);
                             Log.d(TAG, "onChanged: LOGIN FAILED : " + userResponseParserAuthResource.message);
-                            Toast.makeText(AuthActivity.this,userResponseParserAuthResource.message,Toast.LENGTH_LONG).show();
+                            Toast.makeText(AuthActivity.this, userResponseParserAuthResource.message, Toast.LENGTH_LONG).show();
                             break;
                         case ERROR:
                             showProgressBar(false);
-
                             break;
                     }
                 }
@@ -93,10 +95,16 @@ public class AuthActivity extends DaggerAppCompatActivity implements View.OnClic
         });
     }
 
-    private void showProgressBar(boolean isVisible){
-        if(isVisible){
+    private void onLoginSuccess() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void showProgressBar(boolean isVisible) {
+        if (isVisible) {
             progressBar.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             progressBar.setVisibility(View.INVISIBLE);
         }
 

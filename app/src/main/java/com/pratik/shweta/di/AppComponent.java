@@ -3,6 +3,7 @@ package com.pratik.shweta.di;
 import android.app.Application;
 
 import com.pratik.shweta.DaggerSampleApplication;
+import com.pratik.shweta.SessionManager;
 
 import javax.inject.Singleton;
 
@@ -19,12 +20,13 @@ import dagger.android.support.AndroidSupportInjectionModule;
 })
 public interface AppComponent extends AndroidInjector<DaggerSampleApplication> {
 
+    SessionManager sessionManager();
+
     @Component.Builder
     interface Builder {
 
         @BindsInstance
         Builder application(Application application);
-
         AppComponent build();
     }
 }

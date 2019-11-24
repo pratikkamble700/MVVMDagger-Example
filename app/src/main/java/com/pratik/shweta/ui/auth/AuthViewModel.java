@@ -8,6 +8,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
+import com.pratik.shweta.SessionManager;
 import com.pratik.shweta.model.userAPI.UserResponseParser;
 import com.pratik.shweta.network.auth.AuthAPI;
 
@@ -20,12 +21,14 @@ public class AuthViewModel extends ViewModel {
     private static final String TAG = "AuthViewModel";
 
     private AuthAPI authAPI;
+    private SessionManager sessionManager;
 
-    private MediatorLiveData<AuthResource<UserResponseParser>> authUser = new MediatorLiveData();
+//    private MediatorLiveData<AuthResource<UserResponseParser>> authUser = new MediatorLiveData();
 
     @Inject
-    public AuthViewModel(AuthAPI authAPI) {
+    public AuthViewModel(AuthAPI authAPI, SessionManager sessionManager) {
         this.authAPI = authAPI;
+        this.sessionManager = sessionManager;
         Log.d(TAG, "AuthViewModel: View model working");
 
         //API CALL USING RX
@@ -56,7 +59,7 @@ public class AuthViewModel extends ViewModel {
     }
 
     public void authenticateWithId(int id) {
-        authUser.setValue(AuthResource.loading((UserResponseParser) null));
+       /* authUser.setValue(AuthResource.loading((UserResponseParser) null));
         final LiveData<AuthResource<UserResponseParser>> source;
         source = LiveDataReactiveStreams.fromPublisher(
                 authAPI.getUsers(id)
@@ -86,10 +89,36 @@ public class AuthViewModel extends ViewModel {
                 authUser.setValue(userResponseParser);
                 authUser.removeSource(source);
             }
-        });
+        });*/
+
+       sessionManager.authenticateWithId(queryUserId(id));
     }
 
-    public LiveData<AuthResource<UserResponseParser>> obserUser() {
-        return authUser;
+    private LiveData<AuthResource<UserResponseParser>> queryUserId(int id){
+        return LiveDataReactiveStreams.fromPublisher(
+                authAPI.getUsers(id)
+                        .onErrorReturn(new Function<Throwable, UserResponseParser>() {
+                            @Override
+                            public UserResponseParser apply(Throwable throwable) throws Exception {
+                                UserResponseParser errorUser = new UserResponseParser();
+                                errorUser.setId(-1);
+                                return errorUser;
+                            }
+                        })
+                        .map(new Function<UserResponseParser, AuthResource<UserResponseParser>>() {
+                            @Override
+                            public AuthResource<UserResponseParser> apply(UserResponseParser userResponseParser) throws Exception {
+                                if(userResponseParser.getId() == -1){
+                                    return AuthResource.error("Could not Authenticated",null);
+                                }
+                                return AuthResource.authenticated(userResponseParser);
+                            }
+                        })
+                        .subscribeOn(Schedulers.io())
+        );
+    }
+
+    public LiveData<AuthResource<UserResponseParser>> obserSessionState() {
+        return sessionManager.getAuthUser();
     }
 }
