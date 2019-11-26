@@ -3,6 +3,7 @@ package com.pratik.shweta.di;
 import com.pratik.shweta.di.auth.AuthModule;
 import com.pratik.shweta.di.auth.AuthViewModelModule;
 import com.pratik.shweta.di.main.MainFragmentBuilderModule;
+import com.pratik.shweta.di.main.MainModule;
 import com.pratik.shweta.di.main.MainViewModelsModule;
 import com.pratik.shweta.ui.auth.AuthActivity;
 import com.pratik.shweta.ui.main.MainActivity;
@@ -18,7 +19,7 @@ public abstract class ActivityBuilderModule {
     abstract AuthActivity contributeAuthActivity();
 
 
-    @ContributesAndroidInjector(modules = {MainFragmentBuilderModule.class, MainViewModelsModule.class})
+    @ContributesAndroidInjector(modules = {MainFragmentBuilderModule.class, MainViewModelsModule.class, MainModule.class})
     abstract MainActivity contributeMainActivity();
 
 }

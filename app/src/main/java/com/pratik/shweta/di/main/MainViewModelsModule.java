@@ -4,6 +4,7 @@ package com.pratik.shweta.di.main;
 import androidx.lifecycle.ViewModel;
 
 import com.pratik.shweta.di.ViewModelKey;
+import com.pratik.shweta.ui.main.posts.PostsViewModel;
 import com.pratik.shweta.ui.main.profile.ProfileViewModel;
 
 import dagger.Binds;
@@ -17,4 +18,9 @@ public abstract class MainViewModelsModule {
     @IntoMap
     @ViewModelKey(ProfileViewModel.class)
     public abstract ViewModel bindProfileViewModel(ProfileViewModel viewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(PostsViewModel.class)
+    public abstract ViewModel bindPostsViewModel(PostsViewModel viewModel);
 }

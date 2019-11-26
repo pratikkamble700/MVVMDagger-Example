@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import com.pratik.shweta.BaseActivity;
 import com.pratik.shweta.R;
 import com.pratik.shweta.SessionManager;
+import com.pratik.shweta.ui.main.posts.PostsFragment;
 import com.pratik.shweta.ui.main.profile.ProfileFragment;
 
 import javax.inject.Inject;
@@ -38,7 +39,7 @@ public class MainActivity extends BaseActivity {
 
     private void testFragmentTransaction(){
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.main_container,new ProfileFragment())
+                .replace(R.id.main_container,new PostsFragment())
                 .commit();
     }
 
